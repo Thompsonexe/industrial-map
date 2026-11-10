@@ -176,6 +176,7 @@ const SOURCES = {
   pa:     '<a href="https://www.policyaddress.gov.hk" target="_blank">HKSAR Government</a>: 2025 Policy Address, Supplement',
   pland:  '<a href="https://www.pland.gov.hk" target="_blank">Planning Department</a>: Outline Zoning Plan zones (GIS data)',
   esri:   'Basemap: Esri World Dark Gray Canvas'
+  ming:   '<a href="https://www.mingtiandi.com/real-estate/data-centres/amazon-buying-hong-kong-data-centres-from-grand-ming-for-up-to-312m/" target="_blank">Amazon Data Centre</a>: Amazon Data Centre',
 };
 const srcBox = document.getElementById('srcbox');
 function showSources(s){
