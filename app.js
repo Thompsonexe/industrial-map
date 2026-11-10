@@ -175,7 +175,7 @@ const SOURCES = {
   kf:     '<a href="https://www.knightfrank.com.hk" target="_blank">Knight Frank</a>: <i>Hong Kong Industrial Summary</i> Q4 2025, Q2 2026, Q3 2026',
   pa:     '<a href="https://www.policyaddress.gov.hk" target="_blank">HKSAR Government</a>: 2025 Policy Address, Supplement',
   pland:  '<a href="https://www.pland.gov.hk" target="_blank">Planning Department</a>: Outline Zoning Plan zones (GIS data)',
-  esri:   'Basemap: Esri World Dark Gray Canvas'
+  esri:   'Basemap: Esri World Dark Gray Canvas',
   ming:   '<a href="https://www.mingtiandi.com/real-estate/data-centres/amazon-buying-hong-kong-data-centres-from-grand-ming-for-up-to-312m/" target="_blank">Amazon Data Centre</a>: Amazon Data Centre',
 };
 const srcBox = document.getElementById('srcbox');
