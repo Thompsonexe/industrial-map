@@ -1,0 +1,60 @@
+:root{--bg:rgba(16,18,22,.88);--fg:#ececec;--mute:#9aa0a6;--acc:#ff7a1a;--line:rgba(255,255,255,.12)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#1b1b1b;color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#map{position:fixed;inset:0}
+.leaflet-container{background:#1b1b1b}
+#panel{position:fixed;top:24px;left:24px;bottom:84px;width:min(480px,calc(100vw - 48px));background:var(--bg);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;padding:26px 30px;overflow-y:auto;z-index:1000;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.slide{display:none}.slide.active{display:block;animation:fade .45s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+h1{font-size:2.1rem;line-height:1.12;margin:.25em 0 .4em}
+h2{font-size:1.45rem;line-height:1.2;margin:.2em 0 .6em}
+.kicker{color:var(--acc);text-transform:uppercase;letter-spacing:.12em;font-size:.74rem;font-weight:700}
+p,li{color:#d4d4d4}ul,ol{padding-left:1.1em}li{margin:.35em 0}
+b,strong{color:#fff}
+.big{font-size:2.6rem;font-weight:800;color:var(--acc);line-height:1}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat .n{font-size:1.45rem;font-weight:800}.stat .l{font-size:.78rem;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:.86rem;margin:10px 0}
+th,td{padding:6px 7px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:600}
+.neg{color:#ff6b6b}.pos{color:#4ade80}
+.note{font-size:.78rem;color:var(--mute)}
+.callout{border-left:3px solid var(--acc);padding:9px 13px;background:rgba(255,122,26,.09);border-radius:0 8px 8px 0;margin:14px 0}
+.bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:.85rem}
+.bar span:first-child{width:150px;color:var(--mute);flex:none}
+.bar i{display:block;height:14px;border-radius:3px;background:#ff6b6b}
+.calc label{display:block;font-size:.8rem;color:var(--mute);margin-top:9px}
+.calc select,.calc input{width:100%;padding:7px 9px;background:#0e0e0e;color:var(--fg);border:1px solid var(--line);border-radius:6px;font:inherit}
+.calc .out{margin-top:14px;font-size:1.7rem;font-weight:800;color:var(--acc)}
+#nav{position:fixed;left:24px;bottom:24px;display:flex;align-items:center;gap:10px;z-index:1000}
+#nav button{background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+#nav button:hover{border-color:var(--acc)}
+#dots{display:flex;gap:6px}#dots b{width:9px;height:9px;border-radius:50%;background:#555;cursor:pointer}#dots b.on{background:var(--acc)}
+#count{color:var(--mute);font-size:.85rem}
+#legend{position:fixed;right:14px;bottom:28px;z-index:1000;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.8rem;min-width:200px}
+#legend .row{display:flex;align-items:center;gap:8px;margin:3px 0}
+#legend s{width:13px;height:13px;border-radius:3px;flex:none}
+#legend .ha{margin-left:auto;color:var(--mute)}
+#legend button{margin-top:8px;width:100%;background:#0e0e0e;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px;cursor:pointer;font:inherit}
+#legend button:disabled{opacity:.4;cursor:not-allowed}
+#status{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:1100;background:#222;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:.85rem;max-width:90vw}
+#status.err{background:#5b1a1a;border-color:#ff6b6b}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#1f1f1f;color:#eee}
+.leaflet-tooltip.lbl{background:rgba(0,0,0,.78);color:#fff;border:0;box-shadow:none;font-weight:600;font-size:12px}
+.leaflet-tooltip.lbl:before{display:none}
+.leaflet-control-attribution{background:rgba(0,0,0,.5)!important;color:#aaa!important}
+.leaflet-control-attribution a{color:#ccc!important}
+
+/* Sources box (top right) */
+#srcbox{position:fixed;top:14px;right:56px;width:300px;max-height:calc(100vh - 300px);overflow-y:auto;z-index:1000;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.78rem;animation:fade .45s}
+#srcbox b{display:block;color:var(--acc);font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+#srcbox ol{margin:0;padding-left:1.2em}#srcbox li{margin:.3em 0;color:#cfcfcf}
+#srcbox a,#reflist a{color:#7dd3fc}
+
+/* Slide images */
+.pic{margin:12px 0}
+.pic img{width:100%;max-height:200px;object-fit:cover;border-radius:8px;display:block}
+.pic figcaption{font-size:.72rem;color:var(--mute);margin-top:4px}
+
+@media(max-width:800px){#srcbox{display:none!important}}
