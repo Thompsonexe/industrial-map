@@ -1,2 +1,2 @@
-# industiraldns
+# industrialdns
 somefkingpresentation
