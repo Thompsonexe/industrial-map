@@ -1,0 +1,110 @@
+(async () => {
+  const SVC = 'https://www.ozp.tpb.gov.hk/arcgis2/rest/services/SPP3/OZP_PLAN/MapServer';
+  const COLOR_ID = 1015;             // layer with the colour rules
+  const GEOM_CANDIDATES = [1015, 1000];
+  const OUT_SR = 2326, BATCH = 300, PARALLEL = 4;
+
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const getJSON = async (url, params, tries = 4) => {
+    for (let t = 1; ; t++) {
+      try {
+        const r = await fetch(url, {method: 'POST', body: new URLSearchParams(params)});
+        const j = JSON.parse(await r.text());
+        if (j.error) throw new Error(JSON.stringify(j.error));
+        return j;
+      } catch (e) { if (t >= tries) throw e; console.warn('retry', t, e.message); await sleep(1500 * t); }
+    }
+  };
+
+  // Esri rings -> GeoJSON (clockwise ring = outer edge, anticlockwise = hole)
+  const ringArea = r => { let s = 0; for (let i = 0; i < r.length - 1; i++) s += (r[i+1][0] - r[i][0]) * (r[i+1][1] + r[i][1]); return s; };
+  const inRing = (p, r) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+      const [xi, yi] = r[i], [xj, yj] = r[j];
+      if ((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi) * (p[1] - yi) / (yj - yi) + xi) c = !c; } return c; };
+  const ringsToGeo = rings => {
+    const outers = [], holes = [];
+    for (const r of rings) (ringArea(r) >= 0 ? outers : holes).push(r);
+    if (!outers.length) outers.push(...holes.splice(0));
+    const polys = outers.map(o => [o]);
+    for (const h of holes) (polys.find(p => inRing(h[0], p[0])) || polys[0]).push(h);
+    return polys.length === 1 ? {type: 'Polygon', coordinates: polys[0]} : {type: 'MultiPolygon', coordinates: polys};
+  };
+  const toGeo = g => {
+    if (!g) return null;
+    if (typeof g === 'string') { try { g = JSON.parse(g); } catch { return null; } }
+    if (g.rings) return g.rings.length ? ringsToGeo(g.rings) : null;
+    if (g.type && g.coordinates) return g;
+    if (g.geometry) return toGeo(g.geometry);
+    return null;
+  };
+
+  // 1. Test where the shapes actually are
+  let src = null;
+  for (const id of GEOM_CANDIDATES) {
+    const ids = (await getJSON(`${SVC}/${id}/query`, {where: '1=1', returnIdsOnly: 'true', f: 'json'})).objectIds || [];
+    if (!ids.length) { console.log(`layer ${id}: no features`); continue; }
+    const s = await getJSON(`${SVC}/${id}/query`, {objectIds: ids.slice(0, 5).join(','), outFields: '*',
+                            returnGeometry: 'true', outSR: String(OUT_SR), f: 'json'});
+    const f0 = s.features?.[0];
+    const hasShape = !!s.features?.some(f => f.geometry?.rings?.length);
+    const gjKey = f0 && Object.keys(f0.attributes).find(k => /GEOMETRY_JSON/i.test(k));
+    const hasGJ = !!(gjKey && s.features.some(f => toGeo(f.attributes[gjKey])));
+    console.log(`layer ${id}: ${ids.length} features | Shape geometry: ${hasShape} | GEOMETRY_JSON usable: ${hasGJ}`);
+    if (gjKey) console.log('  GEOMETRY_JSON sample:', String(f0.attributes[gjKey]).slice(0, 150));
+    if (!src && (hasShape || hasGJ)) src = {id, ids, mode: hasShape ? 'shape' : 'gj', gjKey};
+  }
+  if (!src) return console.error('No geometry found in either layer. Paste the lines above.');
+  console.log(`✓ shapes from layer ${src.id} via ${src.mode === 'shape' ? 'Shape field' : 'GEOMETRY_JSON'}`);
+
+  // 2. Colour lookup from layer 1015
+  const li = await getJSON(`${SVC}/${COLOR_ID}`, {f: 'json'});
+  window.__layerInfo = li;
+  const R = li.drawingInfo?.renderer || {};
+  const fields = [R.field1, R.field2, R.field3].filter(Boolean);
+  const delim = R.fieldDelimiter || ',';
+  const lut = new Map((R.uniqueValueInfos || []).map(u => [String(u.value), u]));
+  console.log(`renderer: ${R.type} | fields: ${fields} | classes: ${lut.size}`);
+  const hex = c => Array.isArray(c) ? '#' + c.slice(0, 3).map(n => n.toString(16).padStart(2, '0')).join('') : null;
+  const pick = (p, f) => { const s = f.split('.').pop();
+    const k = Object.keys(p).find(k => k === f || k === s || k.endsWith('.' + s)); return k !== undefined ? p[k] : null; };
+  let unmatched = 0, noGeom = 0;
+  const style = p => {
+    const u = lut.get(fields.map(f => pick(p, f)).join(delim));
+    if (!u) unmatched++;
+    const s = u?.symbol || R.defaultSymbol;
+    return {fill_hex: hex(s?.color), fill_alpha: s?.color ? +((s.color[3] ?? 255) / 255).toFixed(2) : 0,
+            line_hex: hex(s?.outline?.color), legend: u?.label ?? R.defaultLabel ?? null};
+  };
+
+  // 3. Download everything in parallel batches (Esri JSON)
+  const chunks = [];
+  for (let i = 0; i < src.ids.length; i += BATCH) chunks.push(src.ids.slice(i, i + BATCH));
+  const all = []; let next = 0, done = 0;
+  const worker = async () => {
+    while (next < chunks.length) {
+      const ch = chunks[next++];
+      const j = await getJSON(`${SVC}/${src.id}/query`, {objectIds: ch.join(','), outFields: '*',
+        returnGeometry: String(src.mode === 'shape'), outSR: String(OUT_SR), f: 'json'});
+      for (const f of j.features || []) {
+        const p = {...f.attributes};
+        const geometry = src.mode === 'shape' ? toGeo(f.geometry) : toGeo(p[src.gjKey]);
+        if (src.gjKey) delete p[src.gjKey];          // drop the big text column
+        if (!geometry) noGeom++;
+        all.push({type: 'Feature', properties: {...p, ...style(p)}, geometry});
+      }
+      done += ch.length; console.log(`got ${done}/${src.ids.length}`);
+    }
+  };
+  await Promise.all(Array.from({length: PARALLEL}, worker));
+
+  // 4. Work out the coordinate system (GEOMETRY_JSON may be stored as lat/lng)
+  const firstXY = JSON.stringify(all.find(f => f.geometry)?.geometry.coordinates).match(/-?\d+\.?\d*/)?.[0];
+  const epsg = src.mode === 'shape' ? OUT_SR : (Math.abs(+firstXY) > 1000 ? 2326 : 4326);
+
+  const fc = {type: 'FeatureCollection', crs: {type: 'name', properties: {name: `urn:ogc:def:crs:EPSG::${epsg}`}}, features: all};
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([JSON.stringify(fc)], {type: 'application/geo+json'})),
+    download: 'ozp_zones_all_coloured.geojson'});
+  document.body.appendChild(a); a.click(); a.remove();
+  console.log(`✓ saved ${all.length} features (EPSG:${epsg}) | no geometry: ${noGeom} | no colour match: ${unmatched}`);
+})();
