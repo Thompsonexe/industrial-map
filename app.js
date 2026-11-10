@@ -205,15 +205,18 @@ function go(i, instant=false){
   state.mode = s.dataset.mode || 'ind';
   if (zones) zones.setStyle(style);
   Object.entries(EXTRAS).forEach(([k, lg]) => k === s.dataset.extra ? lg.addTo(map) : map.removeLayer(lg));
+  fitView(instant);
+}
 
-  const v = s.dataset.view;
+function fitView(instant=false){
+  const v = slides[current].dataset.view;
   const b = v === 'ind' ? indBounds : VIEWS[v];
-  if (b) {
-    const panel = document.getElementById('panel').getBoundingClientRect();
-    const padL = window.innerWidth > 800 ? panel.right + 20 : 20;
-    const opts = {paddingTopLeft:[padL, 30], paddingBottomRight:[30, 30]};
-    instant ? map.fitBounds(b, opts) : map.flyToBounds(b, {...opts, duration:1.3});
-  }
+  if (!b) return;
+  const r = document.getElementById('panel').getBoundingClientRect();
+  const opts = isMobile()
+    ? {paddingTopLeft:[15, 15], paddingBottomRight:[15, window.innerHeight - r.top + 15]}
+    : {paddingTopLeft:[r.right + 20, 30], paddingBottomRight:[30, 30]};
+  instant ? map.fitBounds(b, opts) : map.flyToBounds(b, {...opts, duration:1.3});
 }
 document.getElementById('prev').onclick = () => go(current-1);
 document.getElementById('next').onclick = () => go(current+1);
@@ -247,3 +250,44 @@ function calc(){
 }
 ['c-reg','c-use','c-gfa','c-bonus'].forEach(id => document.getElementById(id).addEventListener('input', calc));
 calc();
+// ---------- Phone support ----------
+function isMobile(){ return window.innerWidth <= 800; }
+const panelEl = document.getElementById('panel');
+
+// Sources go inside the sheet on phones, top-right on desktop
+function placeSources(){
+  if (isMobile()) { if (srcBox.parentNode !== panelEl) panelEl.appendChild(srcBox); }
+  else if (srcBox.parentNode !== document.body) document.body.appendChild(srcBox);
+}
+placeSources();
+
+// Tap the grey bar to make the sheet taller or shorter
+document.getElementById('handle').onclick = () => {
+  const tall = document.body.classList.toggle('tall');
+  if (!tall) setTimeout(() => fitView(), 320);
+};
+
+// Swipe left/right on the sheet to change slides
+let tx = 0, ty = 0;
+panelEl.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, {passive:true});
+panelEl.addEventListener('touchend', e => {
+  if (['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) go(current + (dx < 0 ? 1 : -1));
+}, {passive:true});
+
+// Tap "OZP zones" to open or close the legend on phones
+document.getElementById('legend').addEventListener('click', e => {
+  if (e.target.tagName === 'B') e.currentTarget.classList.toggle('open');
+});
+
+// Re-fit when the phone rotates or the window is resized
+let rt;
+window.addEventListener('resize', () => {
+  clearTimeout(rt);
+  rt = setTimeout(() => {
+    placeSources();
+    map.invalidateSize();
+    if (!document.body.classList.contains('tall')) fitView(true);
+  }, 250);
+});

@@ -57,4 +57,40 @@ th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:6
 .pic img{width:100%;max-height:200px;object-fit:cover;border-radius:8px;display:block}
 .pic figcaption{font-size:.72rem;color:var(--mute);margin-top:4px}
 
-@media(max-width:800px){#srcbox{display:none!important}}
+/* ---------- Phone layout ---------- */
+#handle{display:none}
+@media (max-width:800px){
+  #panel{top:auto;left:0;right:0;bottom:0;width:auto;height:56vh;height:56dvh;
+    border-radius:16px 16px 0 0;border-bottom:0;
+    padding:0 18px calc(80px + env(safe-area-inset-bottom));transition:height .3s}
+  body.tall #panel{height:88vh;height:88dvh}
+  #handle{display:block;position:sticky;top:0;z-index:2;padding:10px 0 12px;margin:0 -18px 4px;
+    background:rgba(16,18,22,.97);cursor:pointer}
+  #handle span{display:block;width:44px;height:5px;border-radius:3px;background:#777;margin:0 auto}
+
+  h1{font-size:1.5rem}h2{font-size:1.2rem}.big{font-size:2rem}
+  .stats{gap:8px}.stat .n{font-size:1.15rem}
+  table{font-size:.74rem}th,td{padding:5px 4px}
+  .bar span:first-child{width:95px}
+  .pic img{max-height:150px}
+  .calc select,.calc input{font-size:16px} /* stops iPhone zooming in */
+
+  #nav{left:0;right:0;bottom:0;justify-content:space-between;z-index:1001;
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+    background:rgba(16,18,22,.97);border-top:1px solid var(--line)}
+  #nav button{padding:10px 22px;font-size:1.1rem}
+  #dots{display:none}
+
+  #legend{top:10px;right:10px;bottom:auto;min-width:0;padding:7px 10px}
+  #legend>b{cursor:pointer}#legend>b:after{content:' ▾'}
+  #legend .row,#legend button{display:none}
+  #legend.open .row{display:flex}#legend.open button{display:block}
+  #legend.open{min-width:200px}
+
+  #panel #srcbox{position:static;width:auto;max-height:none;margin-top:18px}
+
+  .leaflet-control-zoom{display:none}
+  .leaflet-tooltip.lbl{font-size:10px}
+  .leaflet-bottom{bottom:56vh;bottom:56dvh;transition:bottom .3s}
+  body.tall .leaflet-bottom{bottom:88vh;bottom:88dvh}
+}
