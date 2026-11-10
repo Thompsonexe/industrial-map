@@ -291,3 +291,7 @@ window.addEventListener('resize', () => {
     if (!document.body.classList.contains('tall')) fitView(true);
   }, 250);
 });
+
+// Tap the map credits to show all of them
+document.querySelector('.leaflet-control-attribution')
+  ?.addEventListener('click', e => e.currentTarget.classList.toggle('open'));

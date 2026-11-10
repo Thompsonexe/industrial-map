@@ -57,40 +57,32 @@ th:first-child,td:first-child{text-align:left}th{color:var(--mute);font-weight:6
 .pic img{width:100%;max-height:200px;object-fit:cover;border-radius:8px;display:block}
 .pic figcaption{font-size:.72rem;color:var(--mute);margin-top:4px}
 
-/* ---------- Phone layout ---------- */
-#handle{display:none}
+/* ---------- Phone layout: less crowded ---------- */
 @media (max-width:800px){
-  #panel{top:auto;left:0;right:0;bottom:0;width:auto;height:56vh;height:56dvh;
-    border-radius:16px 16px 0 0;border-bottom:0;
-    padding:0 18px calc(80px + env(safe-area-inset-bottom));transition:height .3s}
-  body.tall #panel{height:88vh;height:88dvh}
-  #handle{display:block;position:sticky;top:0;z-index:2;padding:10px 0 12px;margin:0 -18px 4px;
-    background:rgba(16,18,22,.97);cursor:pointer}
-  #handle span{display:block;width:44px;height:5px;border-radius:3px;background:#777;margin:0 auto}
+  /* Slightly shorter sheet so you see more map */
+  #panel{height:50vh;height:50dvh;padding:0 16px calc(62px + env(safe-area-inset-bottom))}
+  .leaflet-bottom{bottom:50vh;bottom:50dvh}
 
-  h1{font-size:1.5rem}h2{font-size:1.2rem}.big{font-size:2rem}
-  .stats{gap:8px}.stat .n{font-size:1.15rem}
-  table{font-size:.74rem}th,td{padding:5px 4px}
-  .bar span:first-child{width:95px}
-  .pic img{max-height:150px}
-  .calc select,.calc input{font-size:16px} /* stops iPhone zooming in */
+  /* Smaller, calmer text */
+  #panel p,#panel li{font-size:14.5px;line-height:1.5;margin:0 0 10px}
+  h1{font-size:1.35rem}
+  h2{font-size:1.1rem;line-height:1.25;margin:4px 0 10px}
+  .kicker,#panel h3{font-size:.7rem;letter-spacing:.12em}
+  table{font-size:.7rem;margin:8px 0}
+  th,td{padding:6px 3px}
 
-  #nav{left:0;right:0;bottom:0;justify-content:space-between;z-index:1001;
-    padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-    background:rgba(16,18,22,.97);border-top:1px solid var(--line)}
-  #nav button{padding:10px 22px;font-size:1.1rem}
-  #dots{display:none}
+  /* Bottom bar: solid background, arrows with the count centred between them */
+  #nav{justify-content:center;gap:28px;padding:6px 12px calc(6px + env(safe-area-inset-bottom));
+    background:#101216}
+  #prev{order:1}#count{order:2;min-width:56px;text-align:center;font-size:.85rem}#next{order:3}
+  #nav button{padding:6px 20px;font-size:1rem}
 
-  #legend{top:10px;right:10px;bottom:auto;min-width:0;padding:7px 10px}
-  #legend>b{cursor:pointer}#legend>b:after{content:' ▾'}
-  #legend .row,#legend button{display:none}
-  #legend.open .row{display:flex}#legend.open button{display:block}
-  #legend.open{min-width:200px}
+  /* Map credits: one short line (tap it to read the whole thing) */
+  .leaflet-control-attribution{font-size:9px;max-width:100vw;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;background:rgba(16,18,22,.6)!important;color:#888}
+  .leaflet-control-attribution.open{white-space:normal}
+  .leaflet-control-attribution a{color:#aaa}
 
-  #panel #srcbox{position:static;width:auto;max-height:none;margin-top:18px}
-
-  .leaflet-control-zoom{display:none}
-  .leaflet-tooltip.lbl{font-size:10px}
-  .leaflet-bottom{bottom:56vh;bottom:56dvh;transition:bottom .3s}
-  body.tall .leaflet-bottom{bottom:88vh;bottom:88dvh}
+  /* Smaller legend button */
+  #legend{padding:5px 9px;font-size:.8rem}
 }
