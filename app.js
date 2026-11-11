@@ -148,7 +148,7 @@ const EXTRAS = {
     pin([22.297,114.268], '③ Tseung Kwan O: assembled', '#c084fc')
   ]),
   counter: L.layerGroup([
-    pin([22.497,114.135], 'Fanling: data centres (AWS, HK$2.45bn)', '#4ade80'),
+    pin([22.4958,114.1435], 'Fanling: data centres (AWS, HK$2.45bn) · click for 3D', '#4ade80').on('click', () => open3D()),
     pin([22.356,114.103], 'Tsing Yi: cold storage (Brookfield, ~HK$663m)', '#7dd3fc'),
     pin([22.503,114.07],  'Northern Metropolis: I&T land', '#ffd166')
   ])
@@ -176,7 +176,7 @@ const SOURCES = {
   pa:     '<a href="https://www.policyaddress.gov.hk" target="_blank">HKSAR Government</a>: 2025 Policy Address, Supplement',
   pland:  '<a href="https://www.pland.gov.hk" target="_blank">Planning Department</a>: Outline Zoning Plan zones (GIS data)',
   esri:   'Basemap: Esri World Dark Gray Canvas',
-  ming:   '<a href="https://www.mingtiandi.com/real-estate/data-centres/amazon-buying-hong-kong-data-centres-from-grand-ming-for-up-to-312m/" target="_blank">Amazon Data Centre</a>: Amazon Data Centre',
+  ming:   '<a href="https://www.mingtiandi.com/real-estate/data-centres/amazon-buying-hong-kong-data-centres-from-grand-ming-for-up-to-312m/" target="_blank">Mingtiandi.com</a>: Amazon Buying Hong Kong Data Centres From Grand Ming for Up to $312M',
 };
 const srcBox = document.getElementById('srcbox');
 function showSources(s){
@@ -292,3 +292,25 @@ window.addEventListener('resize', () => {
     if (!document.body.classList.contains('tall')) fitView(true);
   }, 250);
 });
+// ---------- 3D view (iTech Tower 3.1) ----------
+const view3d = document.getElementById('view3d');
+const frame3d = document.getElementById('frame3d');
+
+function open3D(){
+  frame3d.src = 'itech3d.html';   // only loads when opened
+  view3d.hidden = false;
+}
+function close3D(){
+  view3d.hidden = true;
+  frame3d.src = 'about:blank';    // frees the 3D graphics memory
+}
+document.getElementById('open3d').onclick = open3D;
+document.getElementById('close3d').onclick = close3D;
+window.addEventListener('message', e => { if (e.data === 'close3d') close3D(); });
+
+// While the 3D window is open: Esc closes it, and arrow keys don't change slides
+document.addEventListener('keydown', e => {
+  if (view3d.hidden) return;
+  if (e.key === 'Escape') close3D();
+  e.stopImmediatePropagation();
+}, true);

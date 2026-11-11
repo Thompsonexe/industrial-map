@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>iTech Tower 3.1 – Fanling 3D</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1b1b1b; font: 13px system-ui, sans-serif; color: #d8dce6; }
+  #info { position: absolute; top: 12px; right: 12px; max-width: 280px; line-height: 1.45; background: rgba(16,18,22,.88);
+          border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: 8px 12px; }
+  #info h1 { font-size: 15px; margin: 0 0 4px; color: #ff9900; }
+  #info p { margin: 4px 0; color: #9aa3b5; }
+  .label { position: absolute; pointer-events: none; transform: translate(-50%, -100%); background: rgba(255,255,255,.9);
+           color: #111; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .label.main { background: rgba(255,153,0,.9); }
+  #attr { position: absolute; bottom: 6px; right: 8px; font-size: 11px; color: #777; }
+  #attr a { color: inherit; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<div id="info">
+  <h1>iTech Tower 3.1</h1>
+  <p>3 On Kui Street, On Lok Tsuen, Fanling, N.T.</p>
+  <p>Acquired by Amazon Data Services with iTech Tower 3.2 for up to ~HK$2.45 billion (Q3 2026).</p>
+  <p style="font-size:11px">Drag to rotate · scroll to zoom · Esc to close</p>
+</div>
+<div id="attr">
+  Tiles © Esri — Esri, HERE, Garmin, © <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors ·
+  Buildings © OpenStreetMap contributors
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+
+const CENTER = { lat: 22.49583660867039, lon: 114.14346248169821 };   // iTech Tower 3.1
+const RADIUS = 500, BG = 0x1b1b1b;          // BG matches the Leaflet map background
+const Z = 16;                               // Esri Canvas tiles stop at zoom 16
+const MAP_BRIGHTNESS = 1.2;                 // 1 = original Esri colours, higher = lighter
+
+// ── Annotations: add as many as you like ──
+// h = label height in metres, color = optional label colour
+const NOTES = [
+  { lat: CENTER.lat, lon: CENTER.lon, text: 'iTech Tower 3.1 · AWS', h: 135, main: true },
+  { lat: 22.4960, lon: 114.1442, text: 'iTech Tower 3.2', h: 70 },        // ← replace with real coords
+  { lat: 22.49225, lon: 114.139310, text: 'Fanling Station', h: 40, color: '#7fd1ff' },
+]; 
+// ── Esri Canvas services (same ones the main map uses) ──
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
+const BASE = ESRI + 'World_Dark_Gray_Base/MapServer/tile';
+const REF  = ESRI + 'World_Dark_Gray_Reference/MapServer/tile';
+
+// lat/lon → local metres [x, z]
+const M_LAT = 110574, M_LON = 111320 * Math.cos(CENTER.lat * Math.PI / 180);
+const toLocal = (lat, lon) => [(lon - CENTER.lon) * M_LON, -(lat - CENTER.lat) * M_LAT];
+
+// ── Scene ──
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(BG);
+scene.fog = new THREE.Fog(BG, 700, 2200);
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+sun.position.set(400, 800, 300);
+scene.add(sun, new THREE.HemisphereLight(0x8fa8d8, 0x101010, 0.8));
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 1, 10000);
+camera.position.set(250, 220, 250);
+const controls = new OrbitControls(camera, renderer.domElement);
+Object.assign(controls, { enableDamping: true, minDistance: 60, maxDistance: 1200, maxPolarAngle: Math.PI * 0.48 });
+
+const info = msg => document.getElementById('info').insertAdjacentHTML('beforeend', `<p style="color:#f77">${msg}</p>`);
+
+// ── Map tiles ──
+const loader = new THREE.TextureLoader().setCrossOrigin('anonymous');
+const n = 2 ** Z, lr = CENTER.lat * Math.PI / 180;
+const tileLon = x => x / n * 360 - 180;
+const tileLat = y => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / n))) * 180 / Math.PI;
+let failed = 0, total = 0;
+
+function addTile(x, y, url, overlay) {
+  total++;
+  const a = toLocal(tileLat(y), tileLon(x)), b = toLocal(tileLat(y + 1), tileLon(x + 1));
+  loader.load(`${url}/${Z}/${y}/${x}`, tex => {   // Esri order is {z}/{y}/{x}
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: overlay, depthWrite: !overlay,
+      color: new THREE.Color().setScalar(overlay ? 1 : MAP_BRIGHTNESS) });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(b[0] - a[0], b[1] - a[1]).rotateX(-Math.PI / 2), mat);
+    mesh.position.set((a[0] + b[0]) / 2, overlay ? 0 : -0.5, (a[1] + b[1]) / 2);
+    mesh.renderOrder = overlay ? 0.5 : 0;
+    scene.add(mesh);
+  }, undefined, () => { if (++failed === total) info('Map tiles could not load'); });
+}
+
+const cx = Math.floor((CENTER.lon + 180) / 360 * n);
+const cy = Math.floor((1 - Math.asinh(Math.tan(lr)) / Math.PI) / 2 * n);
+const range = Math.ceil(RADIUS * 1.6 / (40075016 * Math.cos(lr) / n));
+for (let x = cx - range; x <= cx + range; x++)
+  for (let y = cy - range; y <= cy + range; y++) {
+    addTile(x, y, BASE, false);
+    addTile(x, y, REF, true);
+  }
+
+// ── Buildings: iTech orange, others glass ──
+const glass  = new THREE.MeshStandardMaterial({ color: 0x9ab8ff, transparent: true, opacity: 0.18, depthWrite: false, roughness: 0.1, metalness: 0.5 });
+const orange = new THREE.MeshStandardMaterial({ color: 0xff9900, emissive: 0xff7a00, emissiveIntensity: 0.5, transparent: true, opacity: 0.8 });
+
+function style(mesh, isTarget) {
+  mesh.material = isTarget ? orange : glass;
+  mesh.renderOrder = isTarget ? 1 : 2;
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 30), new THREE.LineBasicMaterial(
+    { color: isTarget ? 0xffc266 : 0x6f8fc9, transparent: true, opacity: isTarget ? 1 : 0.45 }));
+  edges.renderOrder = 3;
+  mesh.add(edges);
+}
+
+function addPlaceholder() {   // used if iTech 3.1 isn't in the GLB
+  const box = new THREE.Mesh(new THREE.BoxGeometry(70, 50, 55));
+  box.position.y = 25;
+  style(box, true);
+  scene.add(box);
+}
+
+// Split a mesh into its separate buildings (pieces that don't touch)
+function splitBuildings(mesh) {
+  const src = mesh.geometry.getAttribute('position'), arr = new Float32Array(src.count * 3), p = new THREE.Vector3();
+  for (let i = 0; i < src.count; i++) p.fromBufferAttribute(src, i).applyMatrix4(mesh.matrixWorld).toArray(arr, i * 3);
+  const g = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(arr, 3));
+  if (mesh.geometry.index) g.setIndex(mesh.geometry.index);
+  const m = mergeVertices(g, 0.01), idx = m.index.array;
+
+  const par = Int32Array.from({ length: m.attributes.position.count }, (_, i) => i);
+  const find = i => { while (par[i] !== i) i = par[i] = par[par[i]]; return i; };
+  for (let i = 0; i < idx.length; i += 3) { const r = find(idx[i]); par[find(idx[i + 1])] = r; par[find(idx[i + 2])] = r; }
+
+  const groups = new Map();
+  for (let i = 0; i < idx.length; i += 3) {
+    const k = find(idx[i]);
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(idx[i], idx[i + 1], idx[i + 2]);
+  }
+  return [...groups.values()].map(ix => {
+    const piece = new THREE.BufferGeometry().setAttribute('position', m.attributes.position).setIndex(ix).toNonIndexed();
+    piece.computeVertexNormals();
+    piece.computeBoundingBox();
+    return piece;
+  });
+}
+
+// Lower score = closer to the tower point (0,0). Buildings standing on the point win.
+const score = g => {
+  const b = g.boundingBox, c = b.getCenter(p0);
+  const inside = b.min.x <= 0 && b.max.x >= 0 && b.min.z <= 0 && b.max.z >= 0;
+  return inside ? (b.max.x - b.min.x) * (b.max.z - b.min.z) : 1e9 + c.x * c.x + c.z * c.z;
+};
+const p0 = new THREE.Vector3();
+
+new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync('./buildings.glb').then(gltf => {
+  scene.add(gltf.scene);
+  gltf.scene.updateMatrixWorld(true);
+  const meshes = [];
+  gltf.scene.traverse(o => o.isMesh && meshes.push(o));
+
+  const targets = meshes.filter(o => o.name.startsWith('itech_target'));
+  meshes.filter(o => !targets.includes(o)).forEach(o => style(o, false));
+
+  // Only the single building on the tower's spot stays orange
+  const pieces = targets.flatMap(o => { o.removeFromParent(); return splitBuildings(o); })
+                        .sort((a, b) => score(a) - score(b));
+  pieces.forEach((g, i) => { const mesh = new THREE.Mesh(g); style(mesh, i === 0); scene.add(mesh); });
+  if (!pieces.length) addPlaceholder();
+}).catch(err => {
+  console.error(err);
+  addPlaceholder();
+  info('buildings.glb not found');
+});
+
+// ── Marker: beam + pulsing ring on iTech 3.1 ──
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 120, 16, 1, true),
+  new THREE.MeshBasicMaterial({ color: 0xff9900, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+beam.position.y = 60;
+const ring = new THREE.Mesh(new THREE.RingGeometry(38, 42, 64).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0xff9900, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+ring.position.y = 1;
+scene.add(beam, ring);
+
+// ── Annotation labels + thin stems ──
+const stemMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 });
+const notes = NOTES.map(a => {
+  const [x, z] = toLocal(a.lat, a.lon), h = a.h ?? 40;
+  if (!a.main) scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+    [new THREE.Vector3(x, 0, z), new THREE.Vector3(x, h, z)]), stemMat));
+  const el = document.createElement('div');
+  el.className = 'label' + (a.main ? ' main' : '');
+  el.textContent = a.text;
+  if (a.color) el.style.background = a.color;
+  document.body.appendChild(el);
+  return { el, pos: new THREE.Vector3(x, h, z) };
+});
+const v = new THREE.Vector3();
+
+renderer.setAnimationLoop(now => {
+  controls.update();
+  beam.material.opacity = 0.35 + 0.25 * Math.sin(now * 0.003);
+  const p = (now % 2000) / 2000;
+  ring.scale.setScalar(0.6 + p * 1.4);
+  ring.material.opacity = 0.8 * (1 - p);
+
+  for (const { el, pos } of notes) {
+    v.copy(pos).project(camera);
+    el.style.display = v.z > 1 ? 'none' : 'block';
+    el.style.left = (v.x + 1) / 2 * innerWidth + 'px';
+    el.style.top = (1 - v.y) / 2 * innerHeight + 'px';
+  }
+  renderer.render(scene, camera);
+});
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+// Esc closes the 3D window when it's opened from the presentation
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && window.parent !== window) window.parent.postMessage('close3d', '*');
+});
+</script>
+</head>
+</html>
