@@ -168,13 +168,13 @@ const VIEWS = {
 // The References slide (13) is built from this list automatically.
 const SOURCES = {
   rvd:    '<a href="https://www.rvd.gov.hk/doc/en/HKPR2026_Preliminary_Findings_Eng.pdf" target="_blank">Rating & Valuation Department</a>: <i>Hong Kong Property Review 2025</i>; <i>2026 Preliminary Findings</i>',
-  landsd: '<a href="https://www.landsd.gov.hk" target="_blank">Lands Department</a>: Practice Notes 12/2023, 5/2025, 6/2026 (standard rates, industrial building redevelopment)',
-  devb:   '<a href="https://www.devb.gov.hk" target="_blank">Development Bureau</a>: LegCo brief on standard rates for industrial buildings',
+  landsd: '<a href="https://www.landsd.gov.hk/doc/en/practice-note/lpn/PN%206_2026_text.pdf" target="_blank">Lands Department</a>: Practice Notes 12/2023, 5/2025, 6/2026 (standard rates, industrial building redevelopment)',
+  devb:   '<a href="https://www.devb.gov.hk/en/issues_in_focus/planning-lands/pilot-scheme-for-charging-land-premium/index.html" target="_blank">Development Bureau</a>: LegCo brief on standard rates for industrial buildings',
   cap545: '<a href="https://www.elegislation.gov.hk/hk/cap545" target="_blank">Land (Compulsory Sale for Redevelopment) Ordinance, Cap. 545</a>',
-  cic:    '<a href="https://www.cic.hk" target="_blank">Construction Industry Council</a>: <i>Logistics and Transport for MiC Projects</i>',
-  kf:     '<a href="https://www.knightfrank.com.hk" target="_blank">Knight Frank</a>: <i>Hong Kong Industrial Summary</i> Q4 2025, Q2 2026, Q3 2026',
-  pa:     '<a href="https://www.policyaddress.gov.hk" target="_blank">HKSAR Government</a>: 2025 Policy Address, Supplement',
-  pland:  '<a href="https://www.pland.gov.hk" target="_blank">Planning Department</a>: Outline Zoning Plan zones (GIS data)',
+  cic:    '<a href="https://www.cic.hk/content/dam/cic-data/cic/publications/media/reference-materials/2024/20241127-logistics-and-transport-for-mic-projects.pdf" target="_blank">Construction Industry Council</a>: <i>Logistics and Transport for MiC Projects</i>',
+  kf:     '<a href="https://content.knightfrank.com/research/2415/documents/en/hong-kong-industrial-summary-q4-2025-12623.pdf" target="_blank">Knight Frank</a>: <i>Hong Kong Industrial Summary</i> Q4 2025, Q2 2026, Q3 2026',
+  pa:     '<a href="https://www.policyaddress.gov.hk/2025/public/pdf/supplement/supplement-full_en.pdf" target="_blank">HKSAR Government</a>: 2025 Policy Address, Supplement',
+  pland:  '<a href="https://www.ozp.tpb.gov.hk/" target="_blank">Planning Department</a>: Outline Zoning Plan zones (GIS data)',
   esri:   'Basemap: Esri World Dark Gray Canvas',
   ming:   '<a href="https://www.mingtiandi.com/real-estate/data-centres/amazon-buying-hong-kong-data-centres-from-grand-ming-for-up-to-312m/" target="_blank">Mingtiandi.com</a>: Amazon Buying Hong Kong Data Centres From Grand Ming for Up to $312M',
 };
