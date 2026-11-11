@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Make buildings.glb</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #111; color: #eee;
+         max-width: 620px; margin: 40px auto; padding: 0 16px; line-height: 1.5; }
+  h1 { color: #ff9900; font-size: 22px; }
+  button { background: #ff9900; border: 0; color: #111; padding: 10px 16px; border-radius: 5px;
+           font-weight: 700; font-size: 15px; cursor: pointer; margin: 6px 0; }
+  button:disabled { opacity: .4; cursor: default; }
+  #dlBtn { background: #4fa3ff; }
+  #log { white-space: pre-wrap; background: #000; padding: 10px; border-radius: 5px;
+         font: 13px monospace; min-height: 120px; margin-top: 14px; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<h1>Make buildings.glb</h1>
+
+<button id="getBtn">1. Get buildings from OpenStreetMap</button>
+<p>…or load a <code>buildings.json</code> you already have: <input type="file" id="fileIn" accept=".json"></p>
+<button id="dlBtn" disabled>2. Download buildings.glb</button>
+
+<div id="log"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+// ── MUST match the values in index.html ──
+const CENTER = { lat: 22.49583660867039, lon: 114.14346248169821 };
+const RADIUS = 500;
+const HIGHLIGHT_RADIUS = 45;
+
+const ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+];
+
+// Same projection + bbox as index.html
+const M_PER_DEG_LAT = 110574;
+const M_PER_DEG_LON = 111320 * Math.cos(CENTER.lat * Math.PI / 180);
+const toLocal = (lat, lon) => ({ x: (lon - CENTER.lon) * M_PER_DEG_LON, n: (lat - CENTER.lat) * M_PER_DEG_LAT });
+const BBOX = (() => {
+  const dLat = RADIUS / M_PER_DEG_LAT, dLon = RADIUS / M_PER_DEG_LON;
+  return [CENTER.lat - dLat, CENTER.lon - dLon, CENTER.lat + dLat, CENTER.lon + dLon]
+    .map(v => v.toFixed(5)).join(',');
+})();
+
+const logEl = document.getElementById('log');
+const getBtn = document.getElementById('getBtn');
+const dlBtn = document.getElementById('dlBtn');
+const log = t => { logEl.textContent += t + '\n'; };
+let glb = null;
+
+// Try each Overpass server one at a time
+async function fetchOverpass() {
+  const query = `[out:json][timeout:60];way["building"](${BBOX});out geom qt;`;
+  for (const url of ENDPOINTS) {
+    log('Trying ' + new URL(url).host + ' …');
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: new URLSearchParams({ data: query }),
+        signal: AbortSignal.timeout(90000)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      log(`  OK – ${data.elements.length} elements`);
+      return data;
+    } catch (e) {
+      log('  failed: ' + e.message);
+    }
+  }
+  throw new Error('All servers failed – wait a few minutes and try again.');
+}
+
+function heightOf(tags) {
+  const h = parseFloat(tags.height);
+  if (!isNaN(h)) return h;
+  const lv = parseFloat(tags['building:levels']);
+  if (!isNaN(lv)) return lv * 3.2;
+  return 10;
+}
+
+function addColor(geo, color) {
+  const n = geo.attributes.position.count, arr = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { arr[i*3] = color.r; arr[i*3+1] = color.g; arr[i*3+2] = color.b; }
+  geo.setAttribute('color', new THREE.BufferAttribute(arr, 3));
+}
+
+// OSM data → 3D meshes (same logic as index.html)
+function build(data) {
+  const nodes = new Map();
+  for (const el of data.elements) if (el.type === 'node') nodes.set(el.id, el);
+
+  const normalGeos = [], targetGeos = [], color = new THREE.Color();
+
+  for (const el of data.elements) {
+    if (el.type !== 'way' || !el.tags || !el.tags.building) continue;
+    const coords = el.geometry ? el.geometry : (el.nodes || []).map(id => nodes.get(id));
+
+    const pts = [];
+    for (const c of coords) {
+      if (!c) continue;
+      const p = toLocal(c.lat, c.lon);
+      pts.push(new THREE.Vector2(p.x, p.n));
+    }
+    if (pts.length > 1 && pts[0].equals(pts[pts.length - 1])) pts.pop();
+    if (pts.length < 3) continue;
+
+    let cx = 0, cy = 0;
+    for (const p of pts) { cx += p.x; cy += p.y; }
+    cx /= pts.length; cy /= pts.length;
+    const dist = Math.hypot(cx, cy);
+    if (dist > RADIUS) continue;
+
+    try {
+      const h = heightOf(el.tags);
+      const geo = new THREE.ExtrudeGeometry(new THREE.Shape(pts), { depth: h, bevelEnabled: false });
+      geo.rotateX(-Math.PI / 2);
+      geo.deleteAttribute('uv');
+      const isTarget = dist < HIGHLIGHT_RADIUS;
+      if (isTarget) color.set(0xff9900);
+      else color.setHSL(0.6, 0.2, 0.22 + Math.min(h, 120) / 120 * 0.38);
+      addColor(geo, color);
+      (isTarget ? targetGeos : normalGeos).push(geo);
+    } catch { /* skip broken shape */ }
+  }
+
+  log(`Built ${normalGeos.length} buildings + ${targetGeos.length} iTech part(s)`);
+  if (!targetGeos.length) log('  (iTech 3.1 not in OSM – the site will show a placeholder box)');
+
+  const make = (geos, name) => {
+    if (!geos.length) return null;
+    const merged = mergeGeometries(geos);
+    if (!merged) throw new Error('Could not merge ' + name);
+    const m = new THREE.Mesh(merged, new THREE.MeshStandardMaterial({ vertexColors: true }));
+    m.name = name;
+    m.userData = { bbox: BBOX, count: geos.length };   // index.html checks this
+    return m;
+  };
+  return [make(normalGeos, 'osm_buildings'), make(targetGeos, 'itech_target')].filter(Boolean);
+}
+
+async function process(data) {
+  const objs = build(data);
+  if (!objs.length) throw new Error('No buildings found in this area.');
+  glb = await new GLTFExporter().parseAsync(objs, { binary: true });
+  log(`Ready: buildings.glb (${(glb.byteLength / 1e6).toFixed(2)} MB) – click Download`);
+  dlBtn.disabled = false;
+}
+
+getBtn.addEventListener('click', async () => {
+  getBtn.disabled = true; dlBtn.disabled = true; logEl.textContent = '';
+  log('Area: ' + BBOX);
+  try { await process(await fetchOverpass()); }
+  catch (e) { log('ERROR: ' + e.message); }
+  getBtn.disabled = false;
+});
+
+document.getElementById('fileIn').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  dlBtn.disabled = true; logEl.textContent = '';
+  log('Reading ' + file.name + ' …');
+  try { await process(JSON.parse(await file.text())); }
+  catch (err) { log('ERROR: ' + err.message); }
+});
+
+dlBtn.addEventListener('click', () => {
+  const url = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = 'buildings.glb';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+});
+</script>
+</body>
+</html>
