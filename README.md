@@ -76,8 +76,8 @@ Labels are set in the `NOTES` list near the top of `itech3d.html`:
 - Map tiles © Esri, HERE, Garmin
 - Map data and buildings © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors
 - iTech Tower 3.1 acquisition information: *(add your news source here)*
-- Photos: *(add where your images came from)*
+- Photos: *(check files)*
 
 ## Author
 
-Made by **thompsonexe** for *(your course / school name)*, 2026.
+Made by **thompson sit** for Presentation at Pruden, 2026.
