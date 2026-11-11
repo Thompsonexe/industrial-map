@@ -1,0 +1,156 @@
+Speaking script: Hong Kong's Industrial Land
+The main idea to keep coming back to: Factories left Hong Kong decades ago, but the land is still zoned for them. What's stopping that land from being reused, and what's starting to move in?
+
+Every slide should answer the question the slide before it raised. The → lines at the end of each slide are your bridges, and they're what make the talk flow.
+
+Slide 1: Opening (map of all industrial zones)
+Everything you see lit up on this map is land Hong Kong has set aside for industry. Orange, yellow, purple, blue: that's roughly [total] hectares.
+
+Here's the strange part. Hong Kong barely makes anything anymore. So why do we still have this much industrial land, and what's actually happening on it?
+
+→ "To answer that, we need to know what these colours mean."
+
+Slide 2: What counts as "industrial" (zone stats)
+Planners split this land into four types.
+Industrial, the orange, is traditional factory land: [X] ha.
+Industrial Group D, the yellow, is mostly in the New Territories and allows lighter, rural industry: [X] ha.
+OU(B), the purple, is "Other Specified Uses – Business". These are old industrial areas that have already been opened up to offices and shops: [X] ha.
+And Open Storage, the blue, which is containers, car parks and building materials.
+
+Altogether that's about [share]% of all zoned land.
+
+→ "Most of this was zoned when Hong Kong was a factory city. So what changed?"
+
+Slide 3: The factories left (Greater Bay Area map)
+From the 1980s on, manufacturers moved across the border to Shenzhen, Dongguan, Huizhou and Zhuhai, where land and labour were far cheaper.
+
+Hong Kong's role changed. Instead of making goods, it imports the finished products, and handles the trading, finance and shipping around them.
+
+But the factory buildings stayed behind, and so did the zoning.
+
+→ "So what happened to those buildings?"
+
+Slide 4: What's left behind (vacancy and rents)
+Many old industrial buildings now sit partly empty or are used for things they were never designed for: storage, small offices, even illegal subdivided flats.
+
+According to the Rating and Valuation Department, flatted factory vacancy is around [X]%. Knight Frank reports rents have [fallen / been flat] through 2025 and 2026.
+
+The space isn't worthless, but it's in the wrong form for today's economy.
+
+→ "The government's first answer was to rezone the land."
+
+Slide 5: Rezoning to OU(B) (purple highlighted)
+This purple land is where the government has already rezoned old industrial areas to OU(B). Owners can now redevelop into offices, shops or mixed business uses.
+
+The idea was simple: change the rules and the market will rebuild.
+
+→ "The best place to see whether that worked is Kowloon East."
+
+Slide 6: Kowloon East case study (zoom into Kwun Tong / Kowloon Bay)
+Kwun Tong and Kowloon Bay were Hong Kong's factory heartland. Today they're the city's second business district: glass office towers standing right next to 1960s factory blocks.
+
+Look closely and you'll see it's patchy. Some lots were redeveloped, and the neighbouring lot is unchanged after 50 years.
+
+→ "If the zoning allows it, why hasn't every building been redeveloped? There are two big barriers. The first is money."
+
+Slide 7: Barrier 1, the land premium (calculator)
+In Hong Kong, the government owns the land. To change a building from industrial to commercial, the owner has to pay a land premium: the increase in land value.
+
+Since 2023, Lands Department has used standard rates to make this predictable. Here's an example in Kowloon East:
+
+A 10,000 m² industrial building.
+Switching to commercial means a premium of about HK$105 million.
+If the owner also gets a 20% bonus in floor area, it rises to about HK$177 million.
+(Change the numbers live if you're showing the calculator.)
+
+That's a big bill before a single brick is laid.
+
+→ "Even if an owner can pay, there's a second problem: who actually owns the building?"
+
+Slide 8: Barrier 2, fragmented ownership (Cap. 545)
+Many old industrial buildings were sold off floor by floor, or even unit by unit. One building can have dozens of owners.
+
+To redevelop, a developer needs to buy them all out. The Compulsory Sale Ordinance (Cap. 545) lets a developer who holds a large majority force a sale of the rest. That threshold has been lowered for older buildings [put the exact % from your slide here].
+
+Even so, assembling a whole site is slow, expensive and often ends up in court.
+
+→ "So redevelopment is hard. But some industrial land is finding new jobs, and they're not what you'd expect."
+
+Slide 9: New use 1, construction logistics (MiC route map)
+Hong Kong is building more and more with MiC, Modular Integrated Construction. Whole rooms are built in factories and assembled on site.
+
+Follow the route: the modules are ① made in Huizhou, ② shipped into the River Trade Terminal in Tuen Mun, then ③ trucked to sites like Tseung Kwan O.
+
+Every step needs storage and staging space, which is exactly what industrial and open storage land provides.
+
+→ "Construction is one new use. The other one is a much bigger bet."
+
+Slide 10: New use 2, the counter-trend (data centres and cold storage)
+Some global investors are buying into industrial land:
+
+Fanling: Amazon Web Services bought data centres for about HK$2.45 billion.
+Tsing Yi: Brookfield paid about HK$663 million for cold storage.
+Data centres and cold chains need big floor plates, heavy floor loading and reliable power, and old industrial buildings have all three.
+
+Industrial land isn't dying. It's changing what it's for.
+
+→ "And the government is betting on that shift, especially in the north."
+
+Slide 11: Northern Metropolis (New Territories view)
+The 2025 Policy Address puts the Northern Metropolis at the centre of Hong Kong's plans, with new land set aside for innovation and technology, right next to Shenzhen.
+
+It's a full circle. Forty years ago, industry crossed the border northward. Now Hong Kong is trying to build a new kind of industry facing that same border.
+
+→ "So what does all this tell us?"
+
+Slide 12: Conclusion
+Three takeaways:
+
+The land outlived the factories. Hong Kong still has hundreds of hectares zoned for an economy that moved away.
+Changing the rules wasn't enough. Land premiums and fragmented ownership keep many old buildings stuck.
+New demand is showing up: data centres, cold storage, construction logistics and I&T. The question is whether policy can keep up.
+The colours on this map haven't changed much in 40 years. What happens on the land is changing fast.
+
+→ "Thank you. My sources are on the last slide, and I'm happy to take questions."
+
+Slide 13: References
+(No need to read these. Just leave the slide up during questions.)
+
+Why this order flows better
+Problem, then barriers, then what's next: each section ends on a question the next one answers.
+The barriers come in a pair ("the first is money… the second is ownership"), which is easy for listeners to follow.
+The ending connects back to the start (the border and the map colours), so the talk feels finished.
+At a normal pace it runs about 8 to 10 minutes. To cut time, merge slides 4 and 5, or slides 10 and 11.
+
+
+What this slide is about
+The slide makes one point: Hong Kong has very little industrial land, but it still has more factory floor space than anyone wants to use.
+
+The title: "Little land, but still too much space"
+There are two kinds of supply:
+
+Land supply is small. Hong Kong zones very little new land for industry.
+Floor space supply is too big. The existing buildings (flatted factories, which are multi-storey buildings split into many factory units) have more space than tenants need.
+So the problem isn't a shortage. The space that exists isn't being used.
+
+What each number means
+Number	Meaning
+7.6%	Share of all flatted factory space that was empty at the end of 2025. It rose from 7.0% in 2024, so things got worse.
+1.23M m²	That 7.6% as an actual area: about 1.23 million m² of empty factory floors.
+79,000 m²	New flatted factory space expected to be finished in 2026.
+123,000 m²	New space expected in 2027, which is even more.
+The takeaway: empty space is already going up, yet more new space keeps being built. Unless demand recovers, vacancy will probably keep rising.
+
+Your numbers check out
+They match the government's Rating and Valuation Department (RVD), Hong Kong Property Review 2026. The same report has more facts you could use to back up the slide:
+
+Take-up was negative (−114,000 m²) in 2025. More space was emptied than filled, so demand actually shrank. It was also negative in 2024 (−212,000 m²).
+Prices fell 15.2% from late 2024 to late 2025, and rents fell 3.0%. Both are signs of weak demand.
+Half of the empty space is in Kwun Tong, Tsuen Wan and Kwai Tsing. This connects well to your Kwun Tong slide.
+New space in 2026 will mostly come from Sha Tin, Sai Kung and Kwai Tsing. New space in 2027 will all come from Kwai Tsing and Sai Kung.
+How it fits your presentation
+This slide sets up the "why" for your later slides:
+
+Old industrial areas like Kwun Tong are changing because factories moved out and left empty space.
+MICs and data centres show what that space can be used for instead.
+iTech Tower 3.1: buyers like Amazon Data Services are looking at industrial buildings for data centres. That's one way the extra space is being used.
